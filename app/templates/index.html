@@ -1,0 +1,62 @@
+<!Doctype html>
+<html>
+	<head>
+		<title>Fantastic game</title>
+		<meta charset="utf-8">
+        <link rel='stylesheet' type='text/css' href={{ url_for('static', filename='main.css') }}>
+	</head>
+	<body>
+        <div class="formal-block">
+		<form method='POST' name='username' id='username'>
+			{{ name_form.csrf_token }} 
+			{{ name_form.name.label }} : {{ name_form.name }}
+			{{ name_form.submit }}
+		</form>
+		<div>
+		<!--	<p> {% for d in g.db_data  %}
+				<div>{{ d['username'] }}</div>
+		    	{% endfor %}
+        </p> !-->
+			<h3>{{ session['username'] }}</h3>
+			{% for message in get_flashed_messages() %}
+				{{ message }}
+			{% endfor %}
+		</div>
+		<div>
+			<form method='POST' name='create_room' id='create_room'>
+				{{ create_room_form.csrf_token }}
+				Write a room name:
+				{{ create_room_form.name }}
+				{{ create_room_form.submit }}
+				<div>
+					{% for subfield in create_room_form.players_amount %}
+					{{ subfield }} {{ subfield.label }}<br>
+					{% endfor %}
+				</div>
+				<br>
+				<div>
+					{% for subfield in create_room_form.room_type %}
+					{{ subfield }} {{subfield.label}}<br>
+					{% endfor %}
+				</div>
+			</form>
+		</div>
+		<div>
+			<form method='POST' id='room_enter_code'>
+				{{ room_code_enter_form.csrf_token}}
+				Write a code to room:
+				{{ room_code_enter_form.code }}
+				{{ room_code_enter_form.submit }}
+			</form>
+		</div>
+        </div>
+        <div class="room-block">
+            {% for el in public_rooms %}
+            <div>Room:<a href="/room?id={{el['id']}}" name='public-room'> {{ el['room_name']}} </a>  engaged place: {{ el['engaged_place'] }}/ {{ el['room_size'] }}</div>
+            {%endfor%}
+            {% for k, v in session.items()%}
+            {{ k }} : {{ v }},
+            {% endfor %}
+        </div>
+	</body>
+</html>
