@@ -36,16 +36,27 @@ def index():
 
 @main.route('/room', methods=['GET', 'POST'])
 def room():
-    print("HHIIIIIIIIIII")
+    print("(ROUTE) OPEN ROOM")
     room_leave_form = RoomLeaveForm()
     db = get_db()
     id = request.args.get('id')
+    #playing table probably not need anymore
     playing = db.execute('SELECT * from playing where id=?', (session['pers_id'], )).fetchall()
-    print(playing)
+    #print(playing)
+    print('(ROUTE) GET FROM DB IF PLAYER IS ALREADY PLAY')
+    #next line should be in dissconect
     room = db.execute('SELECT engaged_place, room_size, playing_status from room where id=?', (id, )).fetchall()
+    print('(ROUTE) GET THE ROOM INFO FROM DB')
+    #change all checks 
     if playing != []:
         #player already plays
+        if 'room_id' in session:
+            if session['room_id'] == id:
+                session['reload'] = 'yes'
+                return render_template('room.html', room_id = json.dumps(request.args['id']), room_leave_form=room_leave_form) 
         return abort(404)
+    if 'room_id' not in session:
+        session['room_id'] = id
     if room == []:
         #room does not exist
         return abort(404, 'room does not exist')
@@ -56,11 +67,14 @@ def room():
     if room['engaged_place'] == room['room_size']:
         #room is full
         return abort(404)
-    if  True:       
+    print('(ROUTE) PASS ALL TESTS TO JOIN ROOM')
+    if  True:
+        print('(ROUTE) START UPDATE DB')
         num_of_players = int(db.execute('select engaged_place from room where id=?', (id, )).fetchone()[0])+1
         db.execute('update room set engaged_place = ? where id=?', (num_of_players, id, ))
         db.execute('INSERT INTO playing (id) VALUES (?)', (session['pers_id'], ))
         db.commit()
+        print('(ROUTE) END UPDATE DB')
         session['room_id'] = id 
         return render_template('room.html', room_id = json.dumps(request.args['id']), room_leave_form=room_leave_form) 
 
